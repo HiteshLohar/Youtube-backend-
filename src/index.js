@@ -1,11 +1,43 @@
-const sum = (a , b, callback) => {
-    console.log("sum = " + (a + b));
-    console.log(callback.a)
-}
+// require('dotenv').config({path:'./env'})
 
-const hello = () => {
-    console.log("Hello...");
-    let a=100;
-}
+import dotenv from "dotenv"
 
-sum(10,20, hello);
+import mongoose from "mongoose";
+import { DB_NAME } from "./constants.js";
+import connectDB from "./db/index.js";
+
+
+
+dotenv.config({
+    path:'./env'
+})
+
+connectDB()
+
+
+
+
+ 
+/*
+import express from "express";
+const app = express();
+
+(async () => {
+    try {
+        await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
+        app.on("error", (error) => {
+            console.log("Error : ", error);
+            throw error
+        })
+
+        app.listen(process.env.PORT, () => {
+            console.log(`Server started at http://localhost:${process.env.PORT}`);
+        })
+
+
+    } catch (error) {
+        console.error("Error ", error);
+        throw error;
+    }
+})()
+*/
