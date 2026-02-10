@@ -6,13 +6,21 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const genarateAccessAndRefreshTokens = async (userId) => {
     try {
+        console.log(userId);
         const user = await User.findById(userId);
+        console.log(user, "user is ");
         const accessToken = await user.generateAccessToken();
         const refreshToken = await user.generateRefreshToken();
-
+        console.log(accessToken, refreshToken, "tokens are ");
         user.refreshToken = refreshToken;
-        await user.save({ validateBeforeSave: false });
-
+        console.log("Tokens generated and saved successfully", user.refreshToken);
+        try {
+            await user.save({ validateBeforeSave: false });
+        } catch (error) {
+            console.log("ERROR NAME:", error.name);
+            console.log("ERROR MESSAGE:", error.message);
+            console.log("ERROR CODE:", error.code);
+        }
         return { accessToken, refreshToken };
     } catch (error) {
         throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
@@ -87,7 +95,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body;
 
-    if (!username || !email) {
+    if (!username && !email) {
         throw new ApiError(400, "username or email is required");
     }
 
@@ -131,7 +139,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id,
         {
             $set: {
-                refreshToken: undefined
+                refreshToken: ""
             }
         },
         {
