@@ -13,6 +13,7 @@ const genarateAccessAndRefreshTokens = async (userId) => {
         console.log(user, "user is ");
         const accessToken = await user.generateAccessToken();
         const refreshToken = await user.generateRefreshToken();
+        console.log(accessToken, "access tokens are ");
         console.log(accessToken, refreshToken, "tokens are ");
         user.refreshToken = refreshToken;
         console.log("Tokens generated and saved successfully", user.refreshToken);
@@ -140,8 +141,8 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id,
         {
-            $set: {
-                refreshToken: ""
+            $unset: {
+                refreshToken: 1
             }
         },
         {
@@ -163,8 +164,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingRefreshToken = req.coolie.refreshToken || req.body.refreshToken
-
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+    console.log("Incoming Refresh Token : ", incomingRefreshToken);
     if (!incomingRefreshToken) {
         throw new ApiError(401, "unauthorized request")
     }
@@ -193,12 +194,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             .status(200)
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", newRefreshToken, options)
+            .json(new ApiResponse(200, { accessToken, refreshToken: newRefreshToken }, "Access token refreshed successfully"))
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid Refresh Token")
     }
 })
 
 const changeCurrantPassword = asyncHandler(async (req, res) => {
+    console.log("Change password request body : ", req.body);
     const { oldPassword, newPassword } = req.body;
     const user = await User.findById(req.user?._id);
 
